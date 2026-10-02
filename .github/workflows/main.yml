@@ -1,0 +1,37 @@
+name: Windows Runner Info
+
+on:
+  workflow_dispatch:
+
+jobs:
+  runner-info:
+    runs-on: windows-latest
+
+    steps:
+      - name: Show safe runner information
+        shell: pwsh
+        run: |
+          Write-Host "=== WINDOWS RUNNER INFO ==="
+          Write-Host "Hostname : $env:COMPUTERNAME"
+          Write-Host "Username : $env:USERNAME"
+
+          $os = Get-CimInstance Win32_OperatingSystem
+          Write-Host "OS       : $($os.Caption)"
+          Write-Host "Version  : $($os.Version)"
+          Write-Host "Arch     : $($os.OSArchitecture)"
+
+          Write-Host ""
+          Write-Host "=== NETWORK INFO (PRIVATE ONLY) ==="
+
+          Get-NetIPConfiguration |
+            Where-Object { $_.IPv4Address } |
+            ForEach-Object {
+              Write-Host "Interface: $($_.InterfaceAlias)"
+              $_.IPv4Address | ForEach-Object {
+                Write-Host "Private IP: $($_.IPv4Address)"
+              }
+            }
+
+          Write-Host ""
+          Write-Host "Public IP is intentionally not displayed."
+          Write-Host "No RDP credentials or secrets are exposed."
